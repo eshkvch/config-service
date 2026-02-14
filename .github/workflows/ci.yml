@@ -6,6 +6,31 @@ on:
   pull_request:
 
 jobs:
+  lint:
+    name: Lint Go Code
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Download dependencies
+        working-directory: ./backend
+        run: go mod download
+
+      - name: Run go fmt
+        working-directory: ./backend
+        run: go fmt ./...
+
+      - name: Run go vet
+        working-directory: ./backend
+        run: go vet ./...
+        
   build:
     name: Build Go Project
     runs-on: ubuntu-latest
