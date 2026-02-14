@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-//go:embed doc.yaml doc.json
+// //go:embed doc.yaml doc.json
 var swaggerDocs embed.FS
 
 type ConfigHandler struct {
