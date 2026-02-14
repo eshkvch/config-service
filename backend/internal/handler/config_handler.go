@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"config-service/internal/service"
+	"config-service/backend/internal/service"
 	"embed"
 	"encoding/json"
 	"errors"
@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-// //go:embed doc.yaml doc.json
+//go:embed doc.yaml doc.json
 var swaggerDocs embed.FS
 
 type ConfigHandler struct {
@@ -169,8 +169,7 @@ func (h *ConfigHandler) swaggerJSON(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "doc.json not found", http.StatusNotFound)
 		return
 	}
-	w.Write(data)
-	if err != nil {
+	if _, err := w.Write(data); err != nil {
 		fmt.Println("error write: ", err)
 	}
 }

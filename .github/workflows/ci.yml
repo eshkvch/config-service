@@ -1,54 +1,34 @@
-name: Go CI
+name: CI Pipeline
 
 on:
-  pull_request:
   push:
     branches: [ main ]
+  pull_request:
 
 jobs:
-  # lint:
-  #   name: Lint
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
-
-  #     - name: Setup Go
-  #       uses: actions/setup-go@v5
-  #       with:
-  #         go-version: '1.22'
-
-  #     - name: Install golangci-lint
-  #       uses: golangci/golangci-lint-action@v6
-  #       with:
-  #         version: latest
-
-  #     - name: Run linter
-  #       run: golangci-lint run ./...
-
   build:
-    name: Build
+    name: Build Go Project
     runs-on: ubuntu-latest
-    #needs: lint
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Go
+      - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
+          go-version: '1.24'
 
       - name: Download dependencies
+        working-directory: ./backend
         run: go mod download
 
-      - name: Build
+      - name: Build project
+        working-directory: ./backend
         run: go build -v ./cmd/...
 
   test:
-    name: Test
+    name: Run Tests
     runs-on: ubuntu-latest
     needs: build
 
@@ -56,10 +36,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Go
+      - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
+          go-version: '1.24'
 
-      - name: Run tests
-        run: go test ./... -v -cover
+      - name: Download dependencies
+        working-directory: ./backend
+        run: go mod download
+
+      - name: Run unit tests
+        working-directory: ./backend
+        run: go test -v ./...

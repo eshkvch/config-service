@@ -1,11 +1,11 @@
 package di
 
 import (
-	"config-service/config"
-	"config-service/internal/handler"
-	"config-service/internal/infrastructure/database"
-	"config-service/internal/repository"
-	"config-service/internal/service"
+	"config-service/backend/config"
+	"config-service/backend/internal/handler"
+	"config-service/backend/internal/infrastructure/database"
+	"config-service/backend/internal/repository"
+	"config-service/backend/internal/service"
 	"context"
 	"net/http"
 

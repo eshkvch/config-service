@@ -1,6 +1,6 @@
 package main
 
-import "config-service/internal/di"
+import "config-service/backend/internal/di"
 
 func main() {
 	app := di.NewApp()

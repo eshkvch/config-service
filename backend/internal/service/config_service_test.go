@@ -1,7 +1,7 @@
 package service
 
 import (
-	"config-service/internal/model"
+	"config-service/backend/internal/model"
 	"errors"
 	"testing"
 )

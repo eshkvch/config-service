@@ -1,6 +1,6 @@
 package repository
 
-import "config-service/internal/model"
+import "config-service/backend/internal/model"
 
 type ConfigRepository interface {
 	Create(config *model.Config) error
