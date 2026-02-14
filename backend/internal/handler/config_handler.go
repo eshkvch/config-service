@@ -1,10 +1,11 @@
 package handler
 
 import (
-	"config-service/internal/service"
+	"config-service/backend/internal/service"
 	"embed"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 )
@@ -34,7 +35,7 @@ func (h *ConfigHandler) health(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+	_ = json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 }
 
 func (h *ConfigHandler) handleConfigs(w http.ResponseWriter, r *http.Request) {
@@ -100,7 +101,7 @@ func (h *ConfigHandler) getConfig(w http.ResponseWriter, r *http.Request, enviro
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(config)
+	_ = json.NewEncoder(w).Encode(config)
 }
 
 func (h *ConfigHandler) getAllConfigs(w http.ResponseWriter, r *http.Request, environment string) {
@@ -111,7 +112,7 @@ func (h *ConfigHandler) getAllConfigs(w http.ResponseWriter, r *http.Request, en
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(configs)
+	_ = json.NewEncoder(w).Encode(configs)
 }
 
 func (h *ConfigHandler) updateConfig(w http.ResponseWriter, r *http.Request, environment, key string) {
@@ -168,7 +169,9 @@ func (h *ConfigHandler) swaggerJSON(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "doc.json not found", http.StatusNotFound)
 		return
 	}
-	w.Write(data)
+	if _, err := w.Write(data); err != nil {
+		fmt.Println("error write: ", err)
+	}
 }
 
 func (h *ConfigHandler) swaggerYAML(w http.ResponseWriter, r *http.Request) {
@@ -179,5 +182,8 @@ func (h *ConfigHandler) swaggerYAML(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "swagger.yaml not found", http.StatusNotFound)
 		return
 	}
-	w.Write(data)
+	_, err = w.Write(data)
+	if err != nil {
+		fmt.Println("error write: ", err)
+	}
 }

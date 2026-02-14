@@ -1,8 +1,8 @@
 package database
 
 import (
-	"config-service/internal/model"
-	"config-service/internal/repository"
+	"config-service/backend/internal/model"
+	"config-service/backend/internal/repository"
 	"database/sql"
 	"embed"
 	"errors"

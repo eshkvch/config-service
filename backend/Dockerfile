@@ -1,4 +1,3 @@
-# Stage 1: Build
 FROM golang:1.24-alpine AS builder
 
 WORKDIR /app
@@ -15,12 +14,9 @@ FROM alpine:3.18
 
 WORKDIR /app
 
-# Copy binary from builder
 COPY --from=builder /app/config-service .
 
 COPY --from=builder /app/migrations ./migrations
-
-COPY --from=builder /app/docs ./docs
 
 EXPOSE 8080
 

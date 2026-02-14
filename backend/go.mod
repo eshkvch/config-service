@@ -1,4 +1,4 @@
-module config-service
+module config-service/backend
 
 go 1.24
 
