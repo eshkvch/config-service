@@ -11,6 +11,11 @@
 bin/
 dist/
 build/
+node_modules/
+.vite/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
 vendor/
 
