@@ -1,9 +1,12 @@
-name: CI Pipeline
+name: Backend CI
 
 on:
   push:
     branches: [ main ]
   pull_request:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
 
 jobs:
   lint:
@@ -74,46 +77,3 @@ jobs:
       - name: Run unit tests
         working-directory: ./backend
         run: go test -v ./...
-
-  frontend_build:
-    name: Build Frontend
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Install dependencies
-        working-directory: ./frontend
-        run: npm install
-
-      - name: Build frontend
-        working-directory: ./frontend
-        run: npm run build
-
-  frontend_test:
-    name: Test Frontend
-    runs-on: ubuntu-latest
-    needs: frontend_build
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Install dependencies
-        working-directory: ./frontend
-        run: npm install
-
-      - name: Run frontend tests
-        working-directory: ./frontend
-        run: npm test
