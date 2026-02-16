@@ -11,7 +11,7 @@
 - **Infrastructure Layer** (`internal/infrastructure/`): Реализации репозиториев, работа с БД
 - **Presentation Layer** (`internal/presentation/`): HTTP handlers
 
-## Технологии
+## Технологии 
 
 - Go 1.24
 - PostgreSQL
