@@ -1,13 +1,16 @@
 # Environment Config Service
 
-Учебный проект для лабораторной по DevOps:
-- backend на Go + PostgreSQL;
-- frontend (Vite) как web-клиент к REST API;
-- CI в GitHub Actions (build/test для backend и frontend).
+Учебный проект для лабораторной по DevOps.
 
-## Технологии
+В репозитории есть:
+- backend на Go + PostgreSQL;
+- frontend (admin UI) для работы с REST API;
+- CI pipeline для build/test backend и frontend.
+
+## Стек
+
 - Go 1.24
-- PostgreSQL
+- PostgreSQL 15
 - Uber FX для dependency injection
 - Uber Zap для логирования
 - Go Playground Validator для валидации конфигов
@@ -32,29 +35,32 @@
 Для локального запуска backend без Docker дополнительно:
 - Go 1.24.
 
-## Быстрый запуск (рекомендуемый)
-
-Запуск backend + БД в Docker:
+## Быстрый запуск
 
 ```bash
-cd config-service
-sudo docker compose up -d --build
-sudo docker compose ps
+docker compose up -d --build
+```
+
+Проверка:
+
+```bash
+docker compose ps
 curl -i http://localhost:8080/health
+curl -i http://localhost:3000/health
 ```
 
-Ожидается `HTTP/1.1 200` и JSON со статусом `ok`.
+Ожидается HTTP `200`.
 
-Запуск frontend:
+## Работа через UI
 
-```bash
-cd frontend
-npm install
-echo "VITE_API_BASE_URL=/" > .env.local
-npm run dev
-```
+Открыть: `http://localhost:3000`
 
-Открыть в браузере: `http://localhost:5173`.
+Сценарий проверки:
+1. Ввести `Environment` (например, `production`) и нажать `Load`.
+2. В блоке `Entry Editor` создать запись (`Create`).
+3. Выбрать запись из таблицы (`Select`) и обновить (`Update`).
+4. Проверить `Lookup` по ключу.
+5. Удалить запись (`Delete`).
 
 ## Проверка API (CRUD)
 
@@ -79,14 +85,22 @@ curl -i http://localhost:8080/configs/production
 curl -i -X DELETE http://localhost:8080/configs/production/database_url
 ```
 
-## Проверка через UI
+## Локальная разработка (без Docker для frontend)
 
-1. В поле `Environment` ввести, например, `production`.
-2. Нажать `Load`.
-3. В блоке `Entry Editor` создать запись (`Create`).
-4. Выбрать запись из таблицы (`Select`) и обновить (`Update`).
-5. Проверить `Lookup` по ключу.
-6. Удалить запись (`Delete`).
+Backend можно держать в Docker, frontend запускать локально:
+
+```bash
+# из корня проекта
+docker compose up -d postgres app
+
+# frontend
+cd frontend
+npm install
+echo "VITE_API_BASE_URL=/" > .env.local
+npm run dev
+```
+
+Frontend dev server: `http://localhost:5173`.
 
 ## Тесты и сборка
 
@@ -108,51 +122,48 @@ npm run build
 
 ## CI
 
-В pipeline настроены jobs:
-- backend: `lint`, `build`, `test`;
-- frontend: `frontend_build`, `frontend_test`.
+Workflow: `.github/workflows/ci.yml`
 
-Проверка:
+Jobs:
+- `lint` (backend)
+- `build` (backend)
+- `test` (backend)
+- `frontend_build`
+- `frontend_test`
+
+## Полезные команды
+
+Остановить стек:
 
 ```bash
-git add .
-git commit -m "Run full checks"
-git push
+docker compose down
 ```
 
-Далее проверить статус jobs в GitHub Actions.
+Сбросить БД (удалить volume и поднять заново):
+
+```bash
+docker compose down -v
+docker compose up -d --build
+```
 
 ## Частые проблемы
 
-### `Failed to fetch` в frontend
+### `Failed to fetch` в UI
 
-Проверить, что backend поднят:
+Проверить backend и прокси frontend:
 
 ```bash
 curl -i http://localhost:8080/health
+curl -i http://localhost:3000/health
 ```
 
-Проверить proxy через Vite:
+Если первый запрос не `200` — backend не поднят.
+Если первый `200`, а второй нет — проблема в frontend контейнере/прокси.
+
+### Запускается старая версия frontend
 
 ```bash
-curl -i http://localhost:5173/health
+docker compose up -d --build frontend
 ```
 
-Убедиться, что в `frontend/.env.local` есть:
-
-```env
-VITE_API_BASE_URL=/
-```
-
-После изменения переменных перезапустить `npm run dev`.
-
-## Полезные endpoints
-
-- `GET /health`
-- `GET /doc.json`
-- `GET /doc.yaml`
-- `POST /configs/{env}/{key}`
-- `GET /configs/{env}/{key}`
-- `GET /configs/{env}`
-- `PUT /configs/{env}/{key}`
-- `DELETE /configs/{env}/{key}`
+После этого сделать hard refresh в браузере (`Ctrl+Shift+R`).
