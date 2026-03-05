@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   postgres:
     image: postgres:15-alpine
@@ -19,6 +17,8 @@ services:
       retries: 5
       timeout: 5s
       start_period: 10s
+    networks:
+      - config-network
 
   app:
     build:
@@ -34,6 +34,26 @@ services:
     ports:
       - "8080:8080"
     restart: unless-stopped
+    networks:
+      - config-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: config-frontend
+    depends_on:
+      app:
+        condition: service_started
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+    networks:
+      - config-network
 
 volumes:
   pgdata:
+
+networks:
+  config-network:
+    driver: bridge
