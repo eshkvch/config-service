@@ -1,0 +1,27 @@
+name: Docker Setup & Push
+description: Log in to GHCR, set TAG, build & push Docker image
+runs:
+  using: "composite"
+  inputs:
+    service:
+      description: "Service name (frontend/backend)"
+      required: true
+  steps:
+    - name: Log in to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set image tag
+      run: echo "TAG=${GITHUB_SHA}" >> $GITHUB_ENV
+
+    - name: Build & Push image
+      run: |
+        docker build -t ghcr.io/${{ github.repository }}/${{ inputs.service }}:latest \
+                     -t ghcr.io/${{ github.repository }}/${{ inputs.service }}:${{ env.TAG }} \
+                     ./${{ inputs.service }}
+
+        docker push ghcr.io/${{ github.repository }}/${{ inputs.service }}:latest
+        docker push ghcr.io/${{ github.repository }}/${{ inputs.service }}:${{ env.TAG }}

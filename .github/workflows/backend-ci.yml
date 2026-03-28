@@ -71,25 +71,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
+        
+      - name: Docker setup & Push backend
+        uses: ./.github/actions/docker-setup
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Set image tag
-        id: vars
-        run: echo "TAG=${GITHUB_SHA}" >> $GITHUB_ENV
-
-      - name: Build image
-        run: |
-          docker build -t ghcr.io/${{ github.repository }}/backend:latest \
-                      -t ghcr.io/${{ github.repository }}/backend:${{ env.TAG }} \
-                      ./backend
-
-      - name: Push image
-        run: |
-          docker push ghcr.io/${{ github.repository }}/backend:latest
-          docker push ghcr.io/${{ github.repository }}/backend:${{ env.TAG }}
+          service: backend
