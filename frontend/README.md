@@ -22,7 +22,7 @@ echo "VITE_API_BASE_URL=/" > .env.local
 npm run dev
 ```
 
-Dev URL: `http://localhost:5173`.
+Dev URL: `http://localhost:5173`. 
 
 ## Тесты и сборка
 
