@@ -39,7 +39,7 @@
 curl -X POST http://localhost:8080/configs/production/database_url \
   -H "Content-Type: application/json" \
   -d '{"value": "postgres://localhost:5432/mydb"}'
-```
+``` 
 
 #### Получение конфигурации
 ```bash
