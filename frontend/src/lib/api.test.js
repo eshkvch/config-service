@@ -31,7 +31,7 @@ describe("createConfigApi", () => {
     const result = await api.listConfigs("prod");
     const [url, options] = fetcher.mock.calls[0];
 
-    expect(url).toBe("http://localhost:8080/configs/prod");
+    expect(url).toBe("http://localhost:8080/api/configs/prod");
     expect(options.method).toBe("GET");
     expect(result).toEqual([{ key: "a", value: "b" }]);
   });
@@ -46,7 +46,7 @@ describe("createConfigApi", () => {
     await api.createConfig("stage", "token", "secret");
     const [url, options] = fetcher.mock.calls[0];
 
-    expect(url).toBe("http://api/configs/stage/token");
+    expect(url).toBe("http://api/api/configs/stage/token");
     expect(options.method).toBe("POST");
     expect(JSON.parse(options.body)).toEqual({ value: "secret" });
   });
@@ -61,7 +61,7 @@ describe("createConfigApi", () => {
     await api.updateConfig("stage", "token", "new-secret");
     const [url, options] = fetcher.mock.calls[0];
 
-    expect(url).toBe("http://api/configs/stage/token");
+    expect(url).toBe("http://api/api/configs/stage/token");
     expect(options.method).toBe("PUT");
     expect(JSON.parse(options.body)).toEqual({ value: "new-secret" });
   });
@@ -76,7 +76,7 @@ describe("createConfigApi", () => {
     await api.deleteConfig("stage", "token");
     const [url, options] = fetcher.mock.calls[0];
 
-    expect(url).toBe("http://api/configs/stage/token");
+    expect(url).toBe("http://api/api/configs/stage/token");
     expect(options.method).toBe("DELETE");
   });
 

@@ -26,24 +26,24 @@
 - `GET /health` - Проверка работоспособности сервиса
 
 ### Config Management
-- `POST /configs/{env}/{key}` - Создание новой конфигурации
-- `GET /configs/{env}/{key}` - Получение конфигурации
-- `GET /configs/{env}` - Получение всех конфигураций для окружения
-- `PUT /configs/{env}/{key}` - Обновление конфигурации
-- `DELETE /configs/{env}/{key}` - Удаление конфигурации
+- `POST /api/configs/{env}/{key}` - Создание новой конфигурации
+- `GET api//configs/{env}/{key}` - Получение конфигурации
+- `GET /api/configs/{env}` - Получение всех конфигураций для окружения
+- `PUT /api/configs/{env}/{key}` - Обновление конфигурации
+- `DELETE api//configs/{env}/{key}` - Удаление конфигурации
 
 ### Примеры запросов
 
 #### Создание конфигурации
 ```bash
-curl -X POST http://localhost:8080/configs/production/database_url \
+curl -X POST http://localhost:8080/api/configs/production/database_url \
   -H "Content-Type: application/json" \
   -d '{"value": "postgres://localhost:5432/mydb"}'
 ``` 
 
 #### Получение конфигурации
 ```bash
-curl http://localhost:8080/configs/production/database_url
+curl http://localhost:8080/api/configs/production/database_url
 ```
 
 #### Получение всех конфигураций окружения
@@ -53,14 +53,14 @@ curl http://localhost:8080/configs/production
 
 #### Обновление конфигурации
 ```bash
-curl -X PUT http://localhost:8080/configs/production/database_url \
+curl -X PUT http://localhost:8080/api/configs/production/database_url \
   -H "Content-Type: application/json" \
   -d '{"value": "postgres://localhost:5432/newdb"}'
 ```
 
 #### Удаление конфигурации
 ```bash
-curl -X DELETE http://localhost:8080/configs/production/database_url
+curl -X DELETE http://localhost:8080/api/configs/production/database_url
 ```
 
 ## Установка и запуск

@@ -61,23 +61,23 @@ export function createConfigApi({ baseUrl = DEFAULT_BASE_URL, fetcher = fetch } 
   return {
     baseUrl: root || "same-origin (/)",
     health: () => request("/health"),
-    listConfigs: (env) => request(`/configs/${encodeSegment(env)}`),
+    listConfigs: (env) => request(`/api/configs/${encodeSegment(env)}`),
     getConfig: (env, key) =>
-      request(`/configs/${encodeSegment(env)}/${encodeSegment(key)}`),
+      request(`/api/configs/${encodeSegment(env)}/${encodeSegment(key)}`),
     createConfig: (env, key, value) =>
-      request(`/configs/${encodeSegment(env)}/${encodeSegment(key)}`, {
+      request(`/api/configs/${encodeSegment(env)}/${encodeSegment(key)}`, {
         method: "POST",
         body: { value },
         parse: "none"
       }),
     updateConfig: (env, key, value) =>
-      request(`/configs/${encodeSegment(env)}/${encodeSegment(key)}`, {
+      request(`/api/configs/${encodeSegment(env)}/${encodeSegment(key)}`, {
         method: "PUT",
         body: { value },
         parse: "none"
       }),
     deleteConfig: (env, key) =>
-      request(`/configs/${encodeSegment(env)}/${encodeSegment(key)}`, {
+      request(`/api/configs/${encodeSegment(env)}/${encodeSegment(key)}`, {
         method: "DELETE",
         parse: "none"
       })

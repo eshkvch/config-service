@@ -25,7 +25,7 @@ func (h *ConfigHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/health", h.health)
 	mux.HandleFunc("/doc.json", h.swaggerJSON)
 	mux.HandleFunc("/doc.yaml", h.swaggerYAML)
-	mux.HandleFunc("/configs/", h.handleConfigs)
+	mux.HandleFunc("/api/configs/", h.handleConfigs)
 }
 
 func (h *ConfigHandler) health(w http.ResponseWriter, r *http.Request) {
@@ -39,7 +39,7 @@ func (h *ConfigHandler) health(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ConfigHandler) handleConfigs(w http.ResponseWriter, r *http.Request) {
-	path := strings.TrimPrefix(r.URL.Path, "/configs/")
+	path := strings.TrimPrefix(r.URL.Path, "/api/configs/")
 	parts := strings.Split(strings.Trim(path, "/"), "/")
 
 	if len(parts) == 0 || parts[0] == "" {
@@ -93,7 +93,7 @@ func (h *ConfigHandler) createConfig(w http.ResponseWriter, r *http.Request, env
 	w.WriteHeader(http.StatusCreated)
 }
 
-func (h *ConfigHandler) getConfig(w http.ResponseWriter, r *http.Request, environment, key string) {
+func (h *ConfigHandler) getConfig(w http.ResponseWriter, _ *http.Request, environment, key string) {
 	config, err := h.service.GetConfig(environment, key)
 	if err != nil {
 		h.handleError(w, err)
@@ -104,7 +104,7 @@ func (h *ConfigHandler) getConfig(w http.ResponseWriter, r *http.Request, enviro
 	_ = json.NewEncoder(w).Encode(config)
 }
 
-func (h *ConfigHandler) getAllConfigs(w http.ResponseWriter, r *http.Request, environment string) {
+func (h *ConfigHandler) getAllConfigs(w http.ResponseWriter, _ *http.Request, environment string) {
 	configs, err := h.service.GetAllConfigs(environment)
 	if err != nil {
 		h.handleError(w, err)
