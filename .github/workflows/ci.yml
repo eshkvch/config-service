@@ -73,6 +73,7 @@ jobs:
   frontend_lint:
     name: Frontend Lint
     runs-on: ubuntu-latest
+    needs: backend_build
 
     steps:
       - uses: actions/checkout@v4
