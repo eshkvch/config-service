@@ -3,6 +3,7 @@ package database
 import (
 	"config-service/backend/internal/model"
 	"config-service/backend/internal/repository"
+	"config-service/backend/pkg/metrics"
 	"database/sql"
 	"embed"
 	"errors"
@@ -16,9 +17,10 @@ var queriesFS embed.FS
 type postgresRepository struct {
 	db      *sql.DB
 	queries map[string]string
+	metrics *metrics.Metrics
 }
 
-func NewPostgresRepository(db *sql.DB) (repository.ConfigRepository, error) {
+func NewPostgresRepository(db *sql.DB, m *metrics.Metrics) (repository.ConfigRepository, error) {
 	queries, err := loadQueries()
 	if err != nil {
 		return nil, err
@@ -27,6 +29,7 @@ func NewPostgresRepository(db *sql.DB) (repository.ConfigRepository, error) {
 	return &postgresRepository{
 		db:      db,
 		queries: queries,
+		metrics: m,
 	}, nil
 }
 
@@ -57,15 +60,20 @@ func loadQueries() (map[string]string, error) {
 }
 
 func (r *postgresRepository) Create(config *model.Config) error {
+	start := time.Now()
 	query := r.queries["create_config"]
 	if query == "" {
 		return errors.New("create_config query not found")
 	}
 	_, err := r.db.Exec(query, config.Environment, config.Key, config.Value, config.UpdatedAt)
+	duration := time.Since(start).Seconds()
+	r.metrics.DBQueriesTotal.WithLabelValues("create").Inc()
+	r.metrics.DBQueryDuration.WithLabelValues("create").Observe(duration)
 	return err
 }
 
 func (r *postgresRepository) Get(environment, key string) (*model.Config, error) {
+	start := time.Now()
 	query := r.queries["get_config"]
 	if query == "" {
 		return nil, errors.New("get_config query not found")
@@ -79,6 +87,9 @@ func (r *postgresRepository) Get(environment, key string) (*model.Config, error)
 		&config.Value,
 		&updatedAt,
 	)
+	duration := time.Since(start).Seconds()
+	r.metrics.DBQueriesTotal.WithLabelValues("get").Inc()
+	r.metrics.DBQueryDuration.WithLabelValues("get").Observe(duration)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errors.New("config not found")
@@ -91,6 +102,7 @@ func (r *postgresRepository) Get(environment, key string) (*model.Config, error)
 }
 
 func (r *postgresRepository) GetAll(environment string) ([]*model.Config, error) {
+	start := time.Now()
 	query := r.queries["get_all_configs"]
 	if query == "" {
 		return nil, errors.New("get_all_configs query not found")
@@ -121,10 +133,14 @@ func (r *postgresRepository) GetAll(environment string) ([]*model.Config, error)
 		return nil, err
 	}
 
+	duration := time.Since(start).Seconds()
+	r.metrics.DBQueriesTotal.WithLabelValues("get_all").Inc()
+	r.metrics.DBQueryDuration.WithLabelValues("get_all").Observe(duration)
 	return configs, nil
 }
 
 func (r *postgresRepository) Update(config *model.Config) error {
+	start := time.Now()
 	query := r.queries["update_config"]
 	if query == "" {
 		return errors.New("update_config query not found")
@@ -143,10 +159,14 @@ func (r *postgresRepository) Update(config *model.Config) error {
 		return errors.New("config not found")
 	}
 
+	duration := time.Since(start).Seconds()
+	r.metrics.DBQueriesTotal.WithLabelValues("update").Inc()
+	r.metrics.DBQueryDuration.WithLabelValues("update").Observe(duration)
 	return nil
 }
 
 func (r *postgresRepository) Delete(environment, key string) error {
+	start := time.Now()
 	query := r.queries["delete_config"]
 	if query == "" {
 		return errors.New("delete_config query not found")
@@ -165,16 +185,23 @@ func (r *postgresRepository) Delete(environment, key string) error {
 		return errors.New("config not found")
 	}
 
+	duration := time.Since(start).Seconds()
+	r.metrics.DBQueriesTotal.WithLabelValues("delete").Inc()
+	r.metrics.DBQueryDuration.WithLabelValues("delete").Observe(duration)
 	return nil
 }
 
 func (r *postgresRepository) Exists(environment, key string) (bool, error) {
+	start := time.Now()
 	query := r.queries["exists_config"]
 	if query == "" {
 		return false, errors.New("exists_config query not found")
 	}
 	var exists bool
 	err := r.db.QueryRow(query, environment, key).Scan(&exists)
+	duration := time.Since(start).Seconds()
+	r.metrics.DBQueriesTotal.WithLabelValues("exists").Inc()
+	r.metrics.DBQueryDuration.WithLabelValues("exists").Observe(duration)
 	if err != nil {
 		return false, err
 	}

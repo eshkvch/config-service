@@ -1,5 +1,5 @@
 import "./style.css";
-import { createConfigApi } from "./lib/api.js";
+import { createConfigApi, pushMetric } from "./lib/api.js";
 
 const api = createConfigApi();
 
@@ -309,3 +309,9 @@ setEditState("No entry selected.");
 setLookupResult(null);
 renderConfigs();
 checkBackend();
+
+// Push metrics
+pushMetric('frontend_page_loads_total', 1);
+window.addEventListener('error', () => {
+  pushMetric('frontend_errors_total', 1);
+});

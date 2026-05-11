@@ -6,10 +6,10 @@ import (
 	"config-service/backend/internal/infrastructure/database"
 	"config-service/backend/internal/repository"
 	"config-service/backend/internal/service"
+	"config-service/backend/pkg/metrics"
+	"config-service/backend/pkg/server"
 	"context"
-	"net/http"
 
-	httpSwagger "github.com/swaggo/http-swagger"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -23,7 +23,8 @@ func NewApp() *fx.App {
 			provideConfigRepository,
 			provideConfigService,
 			provideConfigHandler,
-			provideHTTPServer,
+			server.NewServer,
+			metrics.NewMetrics,
 		),
 		fx.Invoke(registerLifecycle),
 	)
@@ -33,8 +34,8 @@ func provideDatabaseConnection(cfg *config.Config) (database.Connection, error) 
 	return database.NewPostgresConnection(cfg.Database.DSN)
 }
 
-func provideConfigRepository(conn database.Connection) (repository.ConfigRepository, error) {
-	return database.NewPostgresRepository(conn.GetDB())
+func provideConfigRepository(conn database.Connection, m *metrics.Metrics) (repository.ConfigRepository, error) {
+	return database.NewPostgresRepository(conn.GetDB(), m)
 }
 
 func provideConfigService(repo repository.ConfigRepository) service.ConfigService {
@@ -45,43 +46,19 @@ func provideConfigHandler(svc service.ConfigService) *handler.ConfigHandler {
 	return handler.NewConfigHandler(svc)
 }
 
-func provideHTTPServer(cfg *config.Config, h *handler.ConfigHandler) *http.Server {
-	mux := http.NewServeMux()
-	h.RegisterRoutes(mux)
-	mux.Handle(
-		"/swagger/",
-		httpSwagger.Handler(
-			httpSwagger.URL("/doc.json"),
-		),
-	)
-	return &http.Server{
-		Addr:    ":" + cfg.HTTP.Port,
-		Handler: mux,
-	}
-}
-
 func registerLifecycle(
 	lc fx.Lifecycle,
-	server *http.Server,
+	server *server.Server,
 	conn database.Connection,
 	logger *zap.Logger,
 ) {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			logger.Info("starting http server", zap.String("addr", server.Addr))
-			go func() {
-				if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-					logger.Error("http server error", zap.Error(err))
-				}
-			}()
+			server.Start()
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			logger.Info("shutting down http server")
-			if err := server.Shutdown(ctx); err != nil {
-				logger.Error("failed to shutdown http server", zap.Error(err))
-				return err
-			}
+			server.GracefulShutdown(5)
 			logger.Info("closing database connection")
 			if err := conn.Close(); err != nil {
 				logger.Error("failed to close database connection", zap.Error(err))

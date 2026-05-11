@@ -1,0 +1,29 @@
+config:
+  target: "http://127.0.0.1:3000"
+  phases:
+    - duration: 30 
+      arrivalRate: 30 #30 новых пользователей в сек
+
+scenarios:
+  - name: "CRUD with unique keys"
+    flow:
+      - function: "generateKey"
+
+      - post:
+          url: "/api/configs/dev/{{ key }}"
+          json:
+            value: "initial"
+
+      - get:
+          url: "/api/configs/dev/{{ key }}"
+
+      - put:
+          url: "/api/configs/dev/{{ key }}"
+          json:
+            value: "updated"
+
+      - get:
+          url: "/api/configs/dev"
+
+      - delete:
+          url: "/api/configs/dev/{{ key }}"

@@ -8,6 +8,15 @@ export function normalizeBaseUrl(baseUrl) {
   return baseUrl.replace(/\/+$/, "");
 }
 
+export function pushMetric(name, value, labels = {}) {
+  const url = 'http://localhost:9091/metrics/job/frontend/instance/1';
+  const metric = `# TYPE ${name} gauge\n${name}{${Object.entries(labels).map(([k, v]) => `${k}="${v}"`).join(',')}} ${value}\n`;
+  fetch(url, {
+    method: 'POST',
+    body: metric,
+  }).catch(err => console.error('Failed to push metric:', err));
+}
+
 function encodeSegment(value) {
   return encodeURIComponent(value);
 }
@@ -83,5 +92,3 @@ export function createConfigApi({ baseUrl = DEFAULT_BASE_URL, fetcher = fetch } 
       })
   };
 }
-
-

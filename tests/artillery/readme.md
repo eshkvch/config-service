@@ -1,0 +1,1 @@
+artillery run test1.yml

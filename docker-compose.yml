@@ -17,8 +17,7 @@ services:
       retries: 5
       timeout: 5s
       start_period: 10s
-    networks:
-      - config-network
+
 
   app:
     build:
@@ -34,8 +33,6 @@ services:
     ports:
       - "8080:8080"
     restart: unless-stopped
-    networks:
-      - config-network
 
   frontend:
     build:
@@ -48,12 +45,66 @@ services:
     ports:
       - "3000:80"
     restart: unless-stopped
-    networks:
-      - config-network
+
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - app
+      - node-exporter
+      - postgres-exporter
+      - pushgateway
+
+  node-exporter:
+    image: prom/node-exporter
+    container_name: node-exporter
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter
+    container_name: postgres-exporter
+    ports:
+      - "9187:9187"
+    environment:
+      DATA_SOURCE_NAME: postgresql://config_user:config_pass@postgres:5432/configdb?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  pushgateway:
+    image: prom/pushgateway
+    container_name: pushgateway
+    ports:
+      - "9091:9091"
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3010:3000"
+    depends_on:
+      - prometheus
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
 
 volumes:
   pgdata:
+  grafana_data:
 
-networks:
-  config-network:
-    driver: bridge
