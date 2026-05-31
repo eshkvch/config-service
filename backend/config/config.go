@@ -24,9 +24,14 @@ type HTTPConfig struct {
 func Load() (*Config, error) {
 	_ = godotenv.Load()
 
+	dsn, err := databaseDSN()
+	if err != nil {
+		return nil, err
+	}
+
 	cfg := &Config{
 		Database: DatabaseConfig{
-			DSN: os.Getenv("DATABASE_URL"),
+			DSN: dsn,
 		},
 		HTTP: HTTPConfig{
 			Port: getEnvOrDefault("PORT", "8080"),
@@ -39,6 +44,27 @@ func Load() (*Config, error) {
 	}
 
 	return cfg, nil
+}
+
+func databaseDSN() (string, error) {
+	if dsn := os.Getenv("DATABASE_URL"); dsn != "" {
+		return dsn, nil
+	}
+
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+	if user == "" || password == "" || dbName == "" {
+		return "", fmt.Errorf("set DATABASE_URL or DB_USER, DB_PASSWORD, DB_NAME (and optionally DB_HOST, DB_PORT)")
+	}
+
+	host := getEnvOrDefault("DB_HOST", "localhost")
+	port := getEnvOrDefault("DB_PORT", "5432")
+
+	return fmt.Sprintf(
+		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
+		user, password, host, port, dbName,
+	), nil
 }
 
 func getEnvOrDefault(key, defaultValue string) string {

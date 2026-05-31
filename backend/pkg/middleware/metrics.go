@@ -2,9 +2,9 @@ package middleware
 
 import (
 	"config-service/backend/pkg/metrics"
-	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -18,7 +18,11 @@ func NewMetricsMiddleware(m *metrics.Metrics) *MetricsMiddleware {
 
 func (mw *MetricsMiddleware) Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("middleware metrics")
+		if shouldSkipMetrics(r.URL.Path) {
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		start := time.Now()
 
 		rw := &responseWriter{ResponseWriter: w, status: 200}
@@ -45,4 +49,10 @@ type responseWriter struct {
 func (rw *responseWriter) WriteHeader(code int) {
 	rw.status = code
 	rw.ResponseWriter.WriteHeader(code)
+}
+
+func shouldSkipMetrics(path string) bool {
+	return path == "/metrics" ||
+		path == "/health" ||
+		strings.HasPrefix(path, "/swagger/")
 }

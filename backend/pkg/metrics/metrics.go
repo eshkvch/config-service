@@ -1,8 +1,6 @@
 package metrics
 
 import (
-	"fmt"
-
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -14,7 +12,6 @@ type Metrics struct {
 }
 
 func NewMetrics() *Metrics {
-	fmt.Println("registered metrics")
 	m := &Metrics{
 		HTTPRequestsTotal: prometheus.NewCounterVec(
 			prometheus.CounterOpts{
