@@ -5,6 +5,11 @@ scrape_configs:
   - job_name: "config-service"
     static_configs:
       - targets: ["config-app:8080"]
+    metrics_path: /metrics
+
+  - job_name: "nginx-frontend"
+    static_configs:
+      - targets: ["nginx-exporter:9113"]
 
   - job_name: "node-exporter"
     static_configs:

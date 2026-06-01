@@ -3,8 +3,8 @@ package server
 import (
 	"config-service/backend/config"
 	"config-service/backend/internal/handler"
-	"config-service/backend/pkg/middleware"
 	"config-service/backend/pkg/metrics"
+	"config-service/backend/pkg/middleware"
 	"context"
 	"log"
 	"net/http"
@@ -13,8 +13,8 @@ import (
 	"syscall"
 	"time"
 
-	httpSwagger "github.com/swaggo/http-swagger"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type Server struct {

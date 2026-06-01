@@ -46,6 +46,16 @@ services:
       - "3000:80"
     restart: unless-stopped
 
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:1.4.0
+    container_name: nginx-exporter
+    command:
+      - -nginx.scrape-uri=http://config-frontend:80/stub_status
+    ports:
+      - "9113:9113"
+    depends_on:
+      - frontend
+
 
   prometheus:
     image: prom/prometheus
@@ -56,6 +66,7 @@ services:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     depends_on:
       - app
+      - nginx-exporter
       - node-exporter
       - postgres-exporter
       - pushgateway

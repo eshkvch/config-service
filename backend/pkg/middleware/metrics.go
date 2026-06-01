@@ -54,5 +54,6 @@ func (rw *responseWriter) WriteHeader(code int) {
 func shouldSkipMetrics(path string) bool {
 	return path == "/metrics" ||
 		path == "/health" ||
-		strings.HasPrefix(path, "/swagger/")
+		strings.HasPrefix(path, "/swagger/") ||
+		strings.HasPrefix(path, "/doc.")
 }
