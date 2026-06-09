@@ -58,6 +58,7 @@ jobs:
     name: SonarQube Backend Analysis
     runs-on: ubuntu-latest
     needs: backend_test
+    environment: Base
 
     steps:
       - uses: actions/checkout@v4
