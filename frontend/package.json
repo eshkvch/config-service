@@ -13,10 +13,10 @@
     "lint:fix": "eslint . --fix"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "^4.1.8",
+    "@vitest/coverage-v8": "^1.6.1",
     "eslint": "^10.1.0",
     "globals": "^17.4.0",
     "vite": "^5.4.6",
-    "vitest": "^4.1.8"
+    "vitest": "^1.6.1"
   }
 }
