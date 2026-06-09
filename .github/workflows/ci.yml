@@ -53,11 +53,49 @@ jobs:
 
       - run: go test -v ./...
         working-directory: ./backend
+        
+  sonar_backend:
+    name: SonarQube Backend Analysis
+    runs-on: ubuntu-latest
+    needs: backend_test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: go mod download
+
+      - name: Run tests with coverage
+        working-directory: ./backend
+        run: go test ./... -coverprofile=coverage.out
+
+      - name: SonarQube Scan (Backend)
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=devops-lab-backend
+            -Dsonar.projectName=devops-lab-backend
+            -Dsonar.sources=.
+            -Dsonar.projectBaseDir=backend
+            -Dsonar.go.coverage.reportPaths=coverage.out
+
+      - name: Quality Gate (Backend)
+        uses: SonarSource/sonarqube-quality-gate-action@v1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   backend_build:
     name: Backend Build
     runs-on: ubuntu-latest
-    needs: backend_test
+    needs: sonar_backend
 
     steps:
       - uses: actions/checkout@v4
