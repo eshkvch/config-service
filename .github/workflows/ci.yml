@@ -170,10 +170,71 @@ jobs:
       - run: npm test
         working-directory: ./frontend
 
+
+  sonar_frontend:
+    name: SonarQube Frontend Analysis
+    runs-on: ubuntu-latest
+    needs: frontend_test
+    environment: Base
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Run tests with coverage
+        working-directory: ./frontend
+        run: npm test -- --coverage
+
+      - name: SonarQube Scan (Frontend)
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
+            -Dsonar.projectKey=devops-lab-frontend
+            -Dsonar.projectName=devops-lab-frontend
+            -Dsonar.sources=.
+            -Dsonar.projectBaseDir=frontend
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.working.directory=.scannerwork
+
+      - name: Quality Gate (Frontend)
+        run: |
+          echo "Waiting for SonarQube Quality Gate..."
+
+          STATUS="PENDING"
+
+          until [ "$STATUS" = "OK" ] || [ "$STATUS" = "ERROR" ]; do
+            RESPONSE=$(curl -s -u ${{ secrets.SONAR_TOKEN }}: \
+              "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=devops-lab-frontend")
+
+            STATUS=$(echo "$RESPONSE" | jq -r '.projectStatus.status // "NONE"')
+
+            echo "Frontend Quality Gate: $STATUS"
+            sleep 5
+          done
+
+          if [ "$STATUS" != "OK" ]; then
+            echo "Frontend Quality Gate FAILED"
+            exit 1
+          fi
+
+          echo "Frontend Quality Gate PASSED"
+
   frontend_build:
     name: Frontend Build
     runs-on: ubuntu-latest
-    needs: frontend_test
+    needs: sonar_frontend
 
     steps:
       - uses: actions/checkout@v4
