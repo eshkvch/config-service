@@ -2,6 +2,7 @@ package database
 
 import (
 	"config-service/backend/internal/model"
+	"config-service/backend/internal/repository"
 	"config-service/backend/pkg/metrics"
 	"context"
 	"database/sql"
@@ -14,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/lib/pq"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -227,6 +229,11 @@ func TestPostgresRepositoryCreate(t *testing.T) {
 	if err := newRepositoryForTest(t, &fakeDBState{execErr: wantErr}).Create(config); !errors.Is(err, wantErr) {
 		t.Fatalf("Create() error = %v, want %v", err, wantErr)
 	}
+
+	duplicateErr := &pq.Error{Code: "23505"}
+	if err := newRepositoryForTest(t, &fakeDBState{execErr: duplicateErr}).Create(config); !errors.Is(err, repository.ErrConfigAlreadyExists) {
+		t.Fatalf("Create() duplicate error = %v, want %v", err, repository.ErrConfigAlreadyExists)
+	}
 }
 
 func TestPostgresRepositoryGet(t *testing.T) {
@@ -249,7 +256,7 @@ func TestPostgresRepositoryGet(t *testing.T) {
 	_, err = newRepositoryForTest(t, &fakeDBState{
 		queryRows: &fakeRows{columns: []string{"env", "key", "value", "updated_at"}},
 	}).Get("prod", "missing")
-	if err == nil || !strings.Contains(err.Error(), "config not found") {
+	if !errors.Is(err, repository.ErrConfigNotFound) {
 		t.Fatalf("Get() no rows error = %v", err)
 	}
 
@@ -316,7 +323,7 @@ func TestPostgresRepositoryUpdate(t *testing.T) {
 
 	if err := newRepositoryForTest(t, &fakeDBState{
 		execResult: fakeResult{rowsAffected: 0},
-	}).Update(config); err == nil || !strings.Contains(err.Error(), "config not found") {
+	}).Update(config); !errors.Is(err, repository.ErrConfigNotFound) {
 		t.Fatalf("Update() no rows error = %v", err)
 	}
 
@@ -340,7 +347,7 @@ func TestPostgresRepositoryDelete(t *testing.T) {
 
 	if err := newRepositoryForTest(t, &fakeDBState{
 		execResult: fakeResult{rowsAffected: 0},
-	}).Delete("prod", "key"); err == nil || !strings.Contains(err.Error(), "config not found") {
+	}).Delete("prod", "key"); !errors.Is(err, repository.ErrConfigNotFound) {
 		t.Fatalf("Delete() no rows error = %v", err)
 	}
 

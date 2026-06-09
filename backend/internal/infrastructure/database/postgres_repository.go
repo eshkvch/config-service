@@ -9,6 +9,8 @@ import (
 	"errors"
 	"strings"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 //go:embed queries/*.sql
@@ -69,6 +71,9 @@ func (r *postgresRepository) Create(config *model.Config) error {
 	duration := time.Since(start).Seconds()
 	r.metrics.DBQueriesTotal.WithLabelValues("create").Inc()
 	r.metrics.DBQueryDuration.WithLabelValues("create").Observe(duration)
+	if isUniqueViolation(err) {
+		return repository.ErrConfigAlreadyExists
+	}
 	return err
 }
 
@@ -92,7 +97,7 @@ func (r *postgresRepository) Get(environment, key string) (*model.Config, error)
 	r.metrics.DBQueryDuration.WithLabelValues("get").Observe(duration)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, errors.New("config not found")
+			return nil, repository.ErrConfigNotFound
 		}
 		return nil, err
 	}
@@ -156,7 +161,7 @@ func (r *postgresRepository) Update(config *model.Config) error {
 	}
 
 	if rowsAffected == 0 {
-		return errors.New("config not found")
+		return repository.ErrConfigNotFound
 	}
 
 	duration := time.Since(start).Seconds()
@@ -182,7 +187,7 @@ func (r *postgresRepository) Delete(environment, key string) error {
 	}
 
 	if rowsAffected == 0 {
-		return errors.New("config not found")
+		return repository.ErrConfigNotFound
 	}
 
 	duration := time.Since(start).Seconds()
@@ -206,4 +211,9 @@ func (r *postgresRepository) Exists(environment, key string) (bool, error) {
 		return false, err
 	}
 	return exists, nil
+}
+
+func isUniqueViolation(err error) bool {
+	var pqErr *pq.Error
+	return errors.As(err, &pqErr) && pqErr.Code == "23505"
 }

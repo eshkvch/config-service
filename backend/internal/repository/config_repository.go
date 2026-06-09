@@ -1,6 +1,14 @@
 package repository
 
-import "config-service/backend/internal/model"
+import (
+	"config-service/backend/internal/model"
+	"errors"
+)
+
+var (
+	ErrConfigNotFound      = errors.New("config not found")
+	ErrConfigAlreadyExists = errors.New("config already exists")
+)
 
 type ConfigRepository interface {
 	Create(config *model.Config) error

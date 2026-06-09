@@ -2,6 +2,7 @@ package service
 
 import (
 	"config-service/backend/internal/model"
+	"config-service/backend/internal/repository"
 	"errors"
 	"testing"
 )
@@ -29,7 +30,7 @@ func (m *mockRepository) Get(environment, key string) (*model.Config, error) {
 	lookupKey := environment + ":" + key
 	config, exists := m.configs[lookupKey]
 	if !exists {
-		return nil, errors.New("not found")
+		return nil, repository.ErrConfigNotFound
 	}
 	return config, nil
 }
@@ -47,7 +48,7 @@ func (m *mockRepository) GetAll(environment string) ([]*model.Config, error) {
 func (m *mockRepository) Update(config *model.Config) error {
 	key := config.Environment + ":" + config.Key
 	if _, exists := m.configs[key]; !exists {
-		return errors.New("not found")
+		return repository.ErrConfigNotFound
 	}
 	m.configs[key] = config
 	return nil
@@ -56,7 +57,7 @@ func (m *mockRepository) Update(config *model.Config) error {
 func (m *mockRepository) Delete(environment, key string) error {
 	lookupKey := environment + ":" + key
 	if _, exists := m.configs[lookupKey]; !exists {
-		return errors.New("not found")
+		return repository.ErrConfigNotFound
 	}
 	delete(m.configs, lookupKey)
 	return nil

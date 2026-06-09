@@ -41,13 +41,23 @@ func (s *configService) CreateConfig(environment, key, value string) error {
 		return err
 	}
 
-	return s.repo.Create(config)
+	if err := s.repo.Create(config); err != nil {
+		if errors.Is(err, repository.ErrConfigAlreadyExists) {
+			return ErrConfigExists
+		}
+		return err
+	}
+
+	return nil
 }
 
 func (s *configService) GetConfig(environment, key string) (*model.Config, error) {
 	config, err := s.repo.Get(environment, key)
 	if err != nil {
-		return nil, ErrConfigNotFound
+		if errors.Is(err, repository.ErrConfigNotFound) {
+			return nil, ErrConfigNotFound
+		}
+		return nil, err
 	}
 	return config, nil
 }
@@ -59,14 +69,24 @@ func (s *configService) GetAllConfigs(environment string) ([]*model.Config, erro
 func (s *configService) UpdateConfig(environment, key, value string) error {
 	config, err := s.repo.Get(environment, key)
 	if err != nil {
-		return ErrConfigNotFound
+		if errors.Is(err, repository.ErrConfigNotFound) {
+			return ErrConfigNotFound
+		}
+		return err
 	}
 
 	if err := config.UpdateValue(value); err != nil {
 		return err
 	}
 
-	return s.repo.Update(config)
+	if err := s.repo.Update(config); err != nil {
+		if errors.Is(err, repository.ErrConfigNotFound) {
+			return ErrConfigNotFound
+		}
+		return err
+	}
+
+	return nil
 }
 
 func (s *configService) DeleteConfig(environment, key string) error {
@@ -78,5 +98,12 @@ func (s *configService) DeleteConfig(environment, key string) error {
 		return ErrConfigNotFound
 	}
 
-	return s.repo.Delete(environment, key)
+	if err := s.repo.Delete(environment, key); err != nil {
+		if errors.Is(err, repository.ErrConfigNotFound) {
+			return ErrConfigNotFound
+		}
+		return err
+	}
+
+	return nil
 }
