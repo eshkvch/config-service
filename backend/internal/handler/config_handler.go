@@ -211,7 +211,6 @@ func (h *ConfigHandler) handleError(w http.ResponseWriter, err error) {
 
 func (h *ConfigHandler) swaggerJSON(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 	data, err := swaggerDocs.ReadFile("doc.json")
 	if err != nil {
 		http.Error(w, "doc.json not found", http.StatusNotFound)
@@ -224,7 +223,6 @@ func (h *ConfigHandler) swaggerJSON(w http.ResponseWriter, r *http.Request) {
 
 func (h *ConfigHandler) swaggerYAML(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/yaml")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 	data, err := swaggerDocs.ReadFile("doc.yaml")
 	if err != nil {
 		http.Error(w, "doc.yaml not found", http.StatusNotFound)

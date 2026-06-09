@@ -75,7 +75,7 @@ jobs:
 
       - name: Run tests with coverage
         working-directory: ./backend
-        run: go test ./... -coverprofile=coverage.out
+        run: go test -coverpkg=./... ./... -coverprofile=coverage.out
 
       - name: SonarQube Scan (Backend)
         uses: SonarSource/sonarqube-scan-action@v6
@@ -86,7 +86,10 @@ jobs:
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
             -Dsonar.projectKey=devops-lab
             -Dsonar.projectName=devops-lab
-            -Dsonar.sources=.
+            -Dsonar.sources=cmd,config,internal,pkg
+            -Dsonar.exclusions=**/*_test.go,internal/handler/doc.*,internal/infrastructure/database/queries/**
+            -Dsonar.coverage.exclusions=**/*_test.go,cmd/**,internal/di/**,pkg/server/**
+            -Dsonar.cpd.exclusions=**/*_test.go
             -Dsonar.projectBaseDir=backend
             -Dsonar.go.coverage.reportPaths=coverage.out
             -Dsonar.working.directory=.scannerwork
