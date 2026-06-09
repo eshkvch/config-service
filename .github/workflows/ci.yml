@@ -89,13 +89,14 @@ jobs:
             -Dsonar.sources=.
             -Dsonar.projectBaseDir=backend
             -Dsonar.go.coverage.reportPaths=coverage.out
+            -Dsonar.working.directory=.scannerwork
 
       - name: Quality Gate (Backend)
-        uses: SonarSource/sonarqube-quality-gate-action@v2
+        uses: SonarSource/sonarqube-quality-gate-action@v1
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          scanMetadataReportFile: .scannerwork/report-task.txt
+          scanMetadataReportFile: backend/.scannerwork/report-task.txt
 
   backend_build:
     name: Backend Build
