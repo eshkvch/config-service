@@ -40,5 +40,6 @@ swagger/docs/
 
 coverage.out
 coverage.html
+coverage/
 
 tmp/
