@@ -11,7 +11,12 @@ export default defineConfig({
     }
   },
   test: {
-    environment: "node"
+    environment: "node",
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      reportsDirectory: './coverage'
+    }
   }
 });
 

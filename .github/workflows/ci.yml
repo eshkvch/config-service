@@ -203,7 +203,7 @@ jobs:
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
             -Dsonar.projectKey=devops-lab-frontend
             -Dsonar.projectName=devops-lab-frontend
-            -Dsonar.sources=.
+            -Dsonar.sources=src
             -Dsonar.projectBaseDir=frontend
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.working.directory=.scannerwork
