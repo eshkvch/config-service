@@ -91,12 +91,27 @@ jobs:
             -Dsonar.go.coverage.reportPaths=coverage.out
             -Dsonar.working.directory=.scannerwork
 
-      - name: Quality Gate (Backend)
-        uses: SonarSource/sonarqube-quality-gate-action@v1
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          scanMetadataReportFile: backend/.scannerwork/report-task.txt
+      - name: Quality Gate (fail CI if not OK)
+        run: |
+          echo "Waiting for SonarQube Quality Gate..."
+
+          STATUS="PENDING"
+
+          until [ "$STATUS" = "OK" ] || [ "$STATUS" = "ERROR" ]; do
+            STATUS=$(curl -s -u ${{ secrets.SONAR_TOKEN }}: \
+              "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=devops-lab" \
+              | jq -r '.projectStatus.status')
+
+            echo "Current status: $STATUS"
+            sleep 5
+          done
+
+          if [ "$STATUS" != "OK" ]; then
+            echo "Quality Gate FAILED"
+            exit 1
+          fi
+
+          echo "Quality Gate PASSED"
 
   backend_build:
     name: Backend Build
