@@ -80,7 +80,7 @@ jobs:
       - name: SonarQube Scan (Backend)
         uses: SonarSource/sonarqube-scan-action@v6
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_BACKEND }}
         with:
           args: >
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
@@ -98,7 +98,7 @@ jobs:
           STATUS="PENDING"
 
           until [ "$STATUS" = "OK" ] || [ "$STATUS" = "ERROR" ]; do
-            RESPONSE=$(curl -s -u ${{ secrets.SONAR_TOKEN }}: \
+            RESPONSE=$(curl -s -u ${{ secrets.SONAR_TOKEN_BACKEND }}: \
               "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=devops-lab")
 
             echo "$RESPONSE"
@@ -197,7 +197,7 @@ jobs:
       - name: SonarQube Scan (Frontend)
         uses: SonarSource/sonarqube-scan-action@v6
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_FRONTEND }}
         with:
           args: >
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
@@ -215,7 +215,7 @@ jobs:
           STATUS="PENDING"
 
           until [ "$STATUS" = "OK" ] || [ "$STATUS" = "ERROR" ]; do
-            RESPONSE=$(curl -s -u ${{ secrets.SONAR_TOKEN }}: \
+            RESPONSE=$(curl -s -u ${{ secrets.SONAR_TOKEN_FRONTEND }}: \
               "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=devops-lab-frontend")
 
             STATUS=$(echo "$RESPONSE" | jq -r '.projectStatus.status // "NONE"')
