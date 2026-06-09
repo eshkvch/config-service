@@ -98,9 +98,12 @@ jobs:
           STATUS="PENDING"
 
           until [ "$STATUS" = "OK" ] || [ "$STATUS" = "ERROR" ]; do
-            STATUS=$(curl -s -u ${{ secrets.SONAR_TOKEN }}: \
-              "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=devops-lab" \
-              | jq -r '.projectStatus.status')
+            RESPONSE=$(curl -s -u ${{ secrets.SONAR_TOKEN }}: \
+              "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=devops-lab")
+
+            echo "$RESPONSE"
+
+            STATUS=$(echo "$RESPONSE" | jq -r '.projectStatus.status // "NONE"')
 
             echo "Current status: $STATUS"
             sleep 5
