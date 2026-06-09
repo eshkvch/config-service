@@ -82,8 +82,8 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           args: >
-            -Dsonar.projectKey=devops-lab-backend
-            -Dsonar.projectName=devops-lab-backend
+            -Dsonar.projectKey=devops-lab
+            -Dsonar.projectName=devops-lab
             -Dsonar.sources=.
             -Dsonar.projectBaseDir=backend
             -Dsonar.go.coverage.reportPaths=coverage.out
