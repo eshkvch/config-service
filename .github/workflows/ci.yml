@@ -62,6 +62,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-go@v5
         with:
@@ -76,12 +78,12 @@ jobs:
         run: go test ./... -coverprofile=coverage.out
 
       - name: SonarQube Scan (Backend)
-        uses: SonarSource/sonarqube-scan-action@v5
+        uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           args: >
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
             -Dsonar.projectKey=devops-lab
             -Dsonar.projectName=devops-lab
             -Dsonar.sources=.
@@ -89,9 +91,11 @@ jobs:
             -Dsonar.go.coverage.reportPaths=coverage.out
 
       - name: Quality Gate (Backend)
-        uses: SonarSource/sonarqube-quality-gate-action@v1
+        uses: SonarSource/sonarqube-quality-gate-action@v2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          scanMetadataReportFile: .scannerwork/report-task.txt
 
   backend_build:
     name: Backend Build
