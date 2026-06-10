@@ -55,44 +55,40 @@ jobs:
           STATE="SUCCESS"
 
           if [ "${{ inputs.backend_lint }}" = "failure" ] || \
-             [ "${{ inputs.backend_test }}" = "failure" ] || \
-             [ "${{ inputs.sonar_backend }}" = "failure" ] || \
-             [ "${{ inputs.backend_build }}" = "failure" ] || \
-             [ "${{ inputs.frontend_lint }}" = "failure" ] || \
-             [ "${{ inputs.frontend_test }}" = "failure" ] || \
-             [ "${{ inputs.sonar_frontend }}" = "failure" ] || \
-             [ "${{ inputs.frontend_build }}" = "failure" ] || \
-             [ "${{ inputs.publish_backend }}" = "failure" ] || \
-             [ "${{ inputs.publish_frontend }}" = "failure" ]; then
+            [ "${{ inputs.backend_test }}" = "failure" ] || \
+            [ "${{ inputs.sonar_backend }}" = "failure" ] || \
+            [ "${{ inputs.backend_build }}" = "failure" ] || \
+            [ "${{ inputs.frontend_lint }}" = "failure" ] || \
+            [ "${{ inputs.frontend_test }}" = "failure" ] || \
+            [ "${{ inputs.sonar_frontend }}" = "failure" ] || \
+            [ "${{ inputs.frontend_build }}" = "failure" ] || \
+            [ "${{ inputs.publish_backend }}" = "failure" ] || \
+            [ "${{ inputs.publish_frontend }}" = "failure" ]; then
             ICON="❌"
             STATE="FAILED"
           fi
 
-          MESSAGE="$ICON CI Pipeline: $STATE
+          MESSAGE=$(cat <<EOF
+      $ICON CI Pipeline: $STATE
 
-Backend:
-- lint: ${{ inputs.backend_lint }}
-- test: ${{ inputs.backend_test }}
-- sonar: ${{ inputs.sonar_backend }}
-- build: ${{ inputs.backend_build }}
+      Backend:
+      - lint: ${{ inputs.backend_lint }}
+      - test: ${{ inputs.backend_test }}
+      - sonar: ${{ inputs.sonar_backend }}
+      - build: ${{ inputs.backend_build }}
 
-Frontend:
-- lint: ${{ inputs.frontend_lint }}
-- test: ${{ inputs.frontend_test }}
-- sonar: ${{ inputs.sonar_frontend }}
-- build: ${{ inputs.frontend_build }}
+      Frontend:
+      - lint: ${{ inputs.frontend_lint }}
+      - test: ${{ inputs.frontend_test }}
+      - sonar: ${{ inputs.sonar_frontend }}
+      - build: ${{ inputs.frontend_build }}
 
-Publish:
-- backend: ${{ inputs.publish_backend }}
-- frontend: ${{ inputs.publish_frontend }}
-"
+      Publish:
+      - backend: ${{ inputs.publish_backend }}
+      - frontend: ${{ inputs.publish_frontend }}
+      EOF
+      )
 
           echo "message<<EOF" >> $GITHUB_OUTPUT
           echo "$MESSAGE" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Send Telegram message
-        run: |
-          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TG_BOT_TOKEN }}/sendMessage" \
-            -d chat_id="${{ secrets.TG_CHAT_ID }}" \
-            -d text="${{ steps.msg.outputs.message }}"
