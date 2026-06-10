@@ -127,7 +127,7 @@ func TestConfigService_GetAllConfigs(t *testing.T) {
 	if len(got) != 1 || got[0].Key != "key" {
 		t.Fatalf("GetAllConfigs() = %#v", got)
 	}
-	if repo.getAllEnv != "prod" {
+	if repo.getAllEnv != "ccsd" {
 		t.Fatalf("GetAll called with env %q", repo.getAllEnv)
 	}
 }
