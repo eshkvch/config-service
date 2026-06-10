@@ -57,7 +57,7 @@ curl -X PUT http://localhost:8080/api/configs/production/database_url \
   -H "Content-Type: application/json" \
   -d '{"value": "postgres://localhost:5432/newdb"}'
 ```
-
+ 
 #### Удаление конфигурации
 ```bash
 curl -X DELETE http://localhost:8080/api/configs/production/database_url
