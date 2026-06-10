@@ -240,3 +240,38 @@ jobs:
       - uses: ./.github/actions/docker-setup
         with:
           service: frontend
+
+  notify:
+    name: Notify Telegram
+    needs:
+      - backend_lint
+      - backend_test
+      - sonar_backend
+      - backend_build
+      - frontend_lint
+      - frontend_test
+      - sonar_frontend
+      - frontend_build
+      - publish_backend
+      - publish_frontend
+    environment: Base
+
+    uses: ./.github/workflows/notify.yml
+
+    with:
+      backend_lint: ${{ needs.backend_lint.result }}
+      backend_test: ${{ needs.backend_test.result }}
+      sonar_backend: ${{ needs.sonar_backend.result }}
+      backend_build: ${{ needs.backend_build.result }}
+
+      frontend_lint: ${{ needs.frontend_lint.result }}
+      frontend_test: ${{ needs.frontend_test.result }}
+      sonar_frontend: ${{ needs.sonar_frontend.result }}
+      frontend_build: ${{ needs.frontend_build.result }}
+
+      publish_backend: ${{ needs.publish_backend.result }}
+      publish_frontend: ${{ needs.publish_frontend.result }}
+
+    secrets:
+      TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+      TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
