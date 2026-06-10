@@ -242,7 +242,7 @@ jobs:
           service: frontend
 
   notify:
-    name: Notify Telegram
+    uses: ./.github/workflows/notify.yml
     needs:
       - backend_lint
       - backend_test
@@ -255,8 +255,6 @@ jobs:
       - publish_backend
       - publish_frontend
     environment: Base
-
-    uses: ./.github/workflows/notify.yml
 
     with:
       backend_lint: ${{ needs.backend_lint.result }}
@@ -274,4 +272,4 @@ jobs:
 
     secrets:
       TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
-      TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+      TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}}
