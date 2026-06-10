@@ -254,7 +254,6 @@ jobs:
       - frontend_build
       - publish_backend
       - publish_frontend
-    environment: Base
 
     with:
       backend_lint: ${{ needs.backend_lint.result }}
