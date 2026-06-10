@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createConfigApi, normalizeBaseUrl } from "./api.js";
+import { createConfigApi, normalizeBaseUrl } from "../src/lib/api.js";
 
 describe("normalizeBaseUrl", () => {
   it("removes trailing slashes", () => {
@@ -90,4 +90,3 @@ describe("createConfigApi", () => {
     await expect(api.getConfig("prod", "missing")).rejects.toThrow("boom");
   });
 });
-

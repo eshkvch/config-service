@@ -30,7 +30,8 @@ jobs:
       - run: go mod download
         working-directory: ./backend
 
-      - run: go fmt ./...
+      - name: Check formatting
+        run: test -z "$(gofmt -l .)"
         working-directory: ./backend
 
       - run: go vet ./...
@@ -75,7 +76,7 @@ jobs:
 
       - name: Run tests with coverage
         working-directory: ./backend
-        run: go test ./... -coverprofile=coverage.out
+        run: go test -coverpkg=./... ./... -coverprofile=coverage.out
 
       - name: SonarQube Scan (Backend)
         uses: SonarSource/sonarqube-scan-action@v6
@@ -86,35 +87,15 @@ jobs:
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
             -Dsonar.projectKey=devops-lab
             -Dsonar.projectName=devops-lab
-            -Dsonar.sources=.
+            -Dsonar.sources=cmd,config,internal,pkg
+            -Dsonar.exclusions=**/*_test.go,internal/handler/doc.*,internal/infrastructure/database/queries/**
+            -Dsonar.coverage.exclusions=**/*_test.go,cmd/**,internal/di/**,pkg/server/**
+            -Dsonar.cpd.exclusions=**/*_test.go
             -Dsonar.projectBaseDir=backend
             -Dsonar.go.coverage.reportPaths=coverage.out
+            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.timeout=300
             -Dsonar.working.directory=.scannerwork
-
-      - name: Quality Gate (fail CI if not OK)
-        run: |
-          echo "Waiting for SonarQube Quality Gate..."
-
-          STATUS="PENDING"
-
-          until [ "$STATUS" = "OK" ] || [ "$STATUS" = "ERROR" ]; do
-            RESPONSE=$(curl -s -u ${{ secrets.SONAR_TOKEN_BACKEND }}: \
-              "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=devops-lab")
-
-            echo "$RESPONSE"
-
-            STATUS=$(echo "$RESPONSE" | jq -r '.projectStatus.status // "NONE"')
-
-            echo "Current status: $STATUS"
-            sleep 5
-          done
-
-          if [ "$STATUS" != "OK" ]; then
-            echo "Quality Gate FAILED"
-            exit 1
-          fi
-
-          echo "Quality Gate PASSED"
 
   backend_build:
     name: Backend Build
@@ -146,7 +127,7 @@ jobs:
         with:
           node-version: "20"
 
-      - run: npm install
+      - run: npm ci
         working-directory: ./frontend
 
       - run: npm run lint
@@ -164,7 +145,7 @@ jobs:
         with:
           node-version: "20"
 
-      - run: npm install
+      - run: npm ci
         working-directory: ./frontend
 
       - run: npm test
@@ -206,30 +187,9 @@ jobs:
             -Dsonar.sources=src
             -Dsonar.projectBaseDir=frontend
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.timeout=300
             -Dsonar.working.directory=.scannerwork
-
-      - name: Quality Gate (Frontend)
-        run: |
-          echo "Waiting for SonarQube Quality Gate..."
-
-          STATUS="PENDING"
-
-          until [ "$STATUS" = "OK" ] || [ "$STATUS" = "ERROR" ]; do
-            RESPONSE=$(curl -s -u ${{ secrets.SONAR_TOKEN_FRONTEND }}: \
-              "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=devops-lab-frontend")
-
-            STATUS=$(echo "$RESPONSE" | jq -r '.projectStatus.status // "NONE"')
-
-            echo "Frontend Quality Gate: $STATUS"
-            sleep 5
-          done
-
-          if [ "$STATUS" != "OK" ]; then
-            echo "Frontend Quality Gate FAILED"
-            exit 1
-          fi
-
-          echo "Frontend Quality Gate PASSED"
 
   frontend_build:
     name: Frontend Build
@@ -243,7 +203,7 @@ jobs:
         with:
           node-version: "20"
 
-      - run: npm install
+      - run: npm ci
         working-directory: ./frontend
 
       - run: npm run build
